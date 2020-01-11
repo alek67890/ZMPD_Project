@@ -3,8 +3,6 @@ import React from 'react';
 // import StatusISS from './StatusISS'
 import TaskList from './TaskList'
 import CreateTask from './CreateTask'
-import PlotCompoment from './PlotCompoment';
-import PlotCompoment2 from './PlotCompoment2';
 
 
 class App extends React.Component {
@@ -14,8 +12,6 @@ class App extends React.Component {
                 <div className="ui segment">
                 <TaskList />
                 <CreateTask />
-                <PlotCompoment />
-                <PlotCompoment2 />
                 </div>
             </div>
         )
