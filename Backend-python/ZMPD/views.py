@@ -41,6 +41,10 @@ def index():
         data['data'][item]['progress'] = str(exporting_threads[item].progress)
         data['data'][item]['output'] = str(exporting_threads[item].output)
         data['data'][item]['status'] = str(exporting_threads[item].status)
+        data['data'][item]['points'] = str(exporting_threads[item].points)
+        data['data'][item]['routes_plot'] = str(exporting_threads[item].routes_plot)
+        data['data'][item]['total_distance'] = str(exporting_threads[item].total_distance)
+        data['data'][item]['total_load'] = str(exporting_threads[item].total_load)
 
     return json.dumps(data)
 @app.route('/create', methods=['POST'])
@@ -50,30 +54,32 @@ def create():
     data = request.get_json()['data']
     # print(data)
     problem_data = tsplib95.utils.load_problem_fromstring(data)
-    data = data.split("\n")
-    sort_data = {}
-    key = ""
-    for index, item in enumerate(data):
-        if (item.find(":") != -1):
-            print(item)
-            temp = item.split(":")
-            sort_data[temp[0].lower()] = temp[1]
-        else:
-            if (item.find(" ") == -1):
-                key = item.lower()
-            else:
-                temp = item.split(" ")
-                try:
-                    sort_data[key][temp[0]] = list(map(float, list(temp[1:])))
-                except:
-                    sort_data[key] = {}
-                    sort_data[key][temp[0]] = list(map(float, list(temp[1:])))
+
+
+    # data = data.split("\n")
+    # sort_data = {}
+    # key = ""
+    # for index, item in enumerate(data):
+    #     if (item.find(":") != -1):
+    #         print(item)
+    #         temp = item.split(":")
+    #         sort_data[temp[0].lower()] = temp[1]
+    #     else:
+    #         if (item.find(" ") == -1):
+    #             key = item.lower()
+    #         else:
+    #             temp = item.split(" ")
+    #             try:
+    #                 sort_data[key][temp[0]] = list(map(float, list(temp[1:])))
+    #             except:
+    #                 sort_data[key] = {}
+    #                 sort_data[key][temp[0]] = list(map(float, list(temp[1:])))
 
     global exporting_threads
 
     thread_id = random.randint(0, 10000)
-    exporting_threads[thread_id] = ExportingThread(problem_data.name)
-    exporting_threads[thread_id].delay_start(10)
+    exporting_threads[thread_id] = ExportingThread(problem_data)
+    exporting_threads[thread_id].delay_start(2)
     # exporting_threads[thread_id].start()
 
     return 'task id: #%s' % thread_id
