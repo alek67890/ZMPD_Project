@@ -1,0 +1,1 @@
+pyinstaller -F ZMPD/main.py
