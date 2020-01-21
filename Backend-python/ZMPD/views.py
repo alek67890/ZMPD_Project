@@ -1,6 +1,8 @@
 import tsplib95
 import random
 import json
+import re
+
 from model import ExportingThread
 from flask import request
 from flask import jsonify
@@ -45,6 +47,7 @@ def index():
         data['data'][item]['routes_plot'] = str(exporting_threads[item].routes_plot)
         data['data'][item]['total_distance'] = str(exporting_threads[item].total_distance)
         data['data'][item]['total_load'] = str(exporting_threads[item].total_load)
+        data['data'][item]['alg'] = str(exporting_threads[item].alg_type)
 
     return json.dumps(data)
 @app.route('/create', methods=['POST'])
@@ -52,10 +55,26 @@ def create():
     # print(request.headers)
     # print(request.data)
     data = request.get_json()['data']
+    alg = request.get_json()['alg']
+    timeValue = int(request.get_json()['timeValue'])
     # print(data)
     problem_data = tsplib95.utils.load_problem_fromstring(data)
 
+    problem_data2 = tsplib95.utils.load_problem_fromstring(data)
 
+    capacity = re.search("^CAPACITY\s*:\s*(\d+)\s*$", data, re.MULTILINE).group(1)
+    capacity = int(capacity)
+
+    node_coords = re.findall(r"^(\d+)\s+([-+]?\d+\.*\d*)\s+([-+]?\d+\.*\d*)\s*$", data, re.MULTILINE)
+    node_coords = {float(a): (float(b), float(c)) for a, b, c in node_coords}
+
+    demands = re.findall(r"^(\d+)\s+(\d+)\s*$", data, re.MULTILINE)
+    demands = {int(a): int(b) for a, b in demands}
+
+    name = re.search("^NAME\s*:\s*(.+)*$", data, re.MULTILINE).group(1)
+    name
+
+    problem_data2 = {'capacity': capacity, 'node_coords': node_coords, 'demands': demands}
     # data = data.split("\n")
     # sort_data = {}
     # key = ""
@@ -77,9 +96,14 @@ def create():
 
     global exporting_threads
 
-    thread_id = random.randint(0, 10000)
-    exporting_threads[thread_id] = ExportingThread(problem_data)
-    exporting_threads[thread_id].delay_start(2)
+    # thread_id = random.randint(0, 10000)
+    # exporting_threads[thread_id] = ExportingThread(problem_data,problem_data.name, alg, timeValue)
+    # exporting_threads[thread_id].delay_start(0.1)
+
+    thread_id2 = random.randint(0, 10000)
+    exporting_threads[thread_id2] = ExportingThread(problem_data2, problem_data.name, alg, timeValue, True)
+    exporting_threads[thread_id2].delay_start(0.1)
+
     # exporting_threads[thread_id].start()
 
     return 'task id: #%s' % thread_id

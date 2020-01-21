@@ -4,24 +4,30 @@ import numpy as np
 from searching import main_sarch
 
 class ExportingThread(threading.Thread):
-    def __init__(self, problem_data):
+    def __init__(self, problem_data, name, alg_type, timeValue, regex=False):
         self.progress = 0
         self.output = {}
         self.status = 'created'
         self.problem_data = problem_data
-        self.task_name = problem_data.name
+        self.task_name = name
         self.points = ''
         self.routes_plot = ''
         self.total_distance = ''
         self.total_load = ''
         self.sol_data = {}
+        self.alg_type = alg_type
+        self.regex = regex
+        self.timeValue = timeValue
         super().__init__()
 
     def run(self):
 
         self.status = 'Preparing data'
         self.progress = 25
-        dist, demands, nun_of_vehicles, capacity, node_coords = self.prepare_data()
+        if self.regex:
+            dist, demands, nun_of_vehicles, capacity, node_coords = self.prepare_data_regex()
+        else:
+            dist, demands, nun_of_vehicles, capacity, node_coords = self.prepare_data()
         time.sleep(0.1)
 
         self.status = 'Finding patch'
@@ -66,8 +72,22 @@ class ExportingThread(threading.Thread):
 
         return dist, demands, nun_of_vehicles, capacity, node_coords
 
+    def prepare_data_regex(self):
+        # print(self.problem_data)
+        demands = list(self.problem_data['demands'].values())
+        node_coords = list(self.problem_data['node_coords'].values())
+        size = len(node_coords)
+        dist = np.zeros([size, size])
+        for i in range(size):
+            for j in range(size):
+                dist[i][j] = self.cal_euc_dist(*node_coords[i], *node_coords[j])
+        capacity = self.problem_data['capacity']
+        num_of_vehicles = int(np.ceil(np.sum(demands) / capacity))
+
+        return dist, demands, num_of_vehicles, capacity, node_coords
+
     def find_patch(self, dist, demands, nun_of_vehicles, capacity):
-        routes, total_distance, total_load = main_sarch(dist, demands, nun_of_vehicles, capacity)
+        routes, total_distance, total_load = main_sarch(dist, demands, nun_of_vehicles, capacity, self.alg_type, self.timeValue)
         self.total_distance = total_distance
         self.total_load = total_load
         return routes

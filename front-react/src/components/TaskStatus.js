@@ -15,13 +15,35 @@ class TaskStatus extends React.Component {
       </div>
       
     }
+    let alg = ''
+    switch (this.props.alg) {
+      case 'AUTOMATIC':
+        alg = "Automatic";
+        break;
+      case 'SIMULATED_ANNEALING':
+        alg = "Simulated annealing";
+        break;
+      case 'GREEDY_DESCENT':
+        alg = "Greedy descent";
+        break;
+      case 'GUIDED_LOCAL_SEARCH':
+        alg = "Guided Local Search";
+        break;
+      case 'TABU_SEARCH':
+        alg = "Tabu search";
+        break;
+      case 'OBJECTIVE_TABU_SEARCH':
+        alg = "Objective Tabu search";
+        break;
+      default:
+        alg = 'Unknown'
+    }
     
-// {JSON.parse(this.props.routes_plot)}
-
     return <div className="ui segment">
         <div className='message-box'>
-        {this.props.name}
-        <br/> Progress : {this.props.progress}%
+        {this.props.name} <br/>
+        Algorithm used: {alg} <br/>
+        Progress : {this.props.progress}%
         <Line percent={this.props.progress} strokeWidth="4" strokeColor="blue" />
         Current status : {this.props.status}
         {plot}

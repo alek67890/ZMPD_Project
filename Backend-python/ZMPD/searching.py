@@ -11,6 +11,8 @@ def create_data_model(dist, demands, K, capacity):
     data['vehicle_capacities'] = K * [capacity]
     data['num_vehicles'] = K
     data['depot'] = 0
+    print(data)
+    print('+++++++++++++++++++++++++')
     return data
 
 
@@ -43,7 +45,7 @@ def print_solution(data, manager, routing, assignment):
     return total_distance, total_load
 
 
-def main_sarch(dist, demands, K, capacity):
+def main_sarch(dist, demands, K, capacity, alg_type, time_limit=360):
     """Solve the CVRP problem."""
     # Instantiate the data problem.
     data = create_data_model(dist, demands, K, capacity)
@@ -85,18 +87,45 @@ def main_sarch(dist, demands, K, capacity):
         'Capacity')
 
     # Setting first solution heuristic.
+
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+
+    # search_parameters.local_search_metaheuristic = (
+    #     routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+
+    # "AUTOMATIC"
+
+    if alg_type == 'AUTOMATIC':
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.AUTOMATIC)
+
+    if alg_type == "GREEDY_DESCENT":
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.GREEDY_DESCENT)
+
+    elif alg_type == "GUIDED_LOCAL_SEARCH":
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
+
+    elif alg_type == "SIMULATED_ANNEALING":
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.SIMULATED_ANNEALING)
+
+    elif alg_type == "TABU_SEARCH":
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.TABU_SEARCH)
+
+    elif alg_type == "OBJECTIVE_TABU_SEARCH":
+        search_parameters.local_search_metaheuristic = (
+            routing_enums_pb2.LocalSearchMetaheuristic.OBJECTIVE_TABU_SEARCH)
+
+    search_parameters.time_limit.seconds = time_limit
+
     search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+        routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
 
     # Solve the problem.
     assignment = routing.SolveWithParameters(search_parameters)
-
-    # Print solution on console.
-    if assignment:
-        total_distance, total_load = print_solution(data, manager, routing, assignment)
-
-    print('------------------------------')
 
     def get_routes(manager, routing, solution, num_routes):
         """Get vehicle routes from a solution and store them in an array."""
@@ -112,10 +141,18 @@ def main_sarch(dist, demands, K, capacity):
             routes.append(route)
         return routes
 
-    routes = get_routes(manager, routing, assignment, data['num_vehicles'])
+    # Print solution on console.
+    if assignment:
+        total_distance, total_load = print_solution(data, manager, routing, assignment)
+        routes = get_routes(manager, routing, assignment, data['num_vehicles'])
 
-    for i, route in enumerate(routes):
-        print('Route', i, route)
+        for i, route in enumerate(routes):
+            print('Route', i, route)
+    else:
+        routes = []
+        total_distance, total_load = 0, 0
+
+    print('------------------------------')
 
     return routes, total_distance, total_load
 

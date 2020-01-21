@@ -38,6 +38,7 @@ class TaskList extends React.Component {
                             routes_plot={element.routes_plot}
                             total_load={element.total_load}
                             total_distance={element.total_distance}
+                            alg={element.alg}
                             />
                 }
                 return ""
