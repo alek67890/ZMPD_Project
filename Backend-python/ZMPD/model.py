@@ -4,7 +4,7 @@ import numpy as np
 from searching import main_sarch
 
 class ExportingThread(threading.Thread):
-    def __init__(self, problem_data, name, alg_type, timeValue, regex=False):
+    def __init__(self, problem_data, name, alg_type, firstSolution, timeValue, regex=False):
         self.progress = 0
         self.output = {}
         self.status = 'created'
@@ -18,6 +18,7 @@ class ExportingThread(threading.Thread):
         self.alg_type = alg_type
         self.regex = regex
         self.timeValue = timeValue
+        self.firstSolution = firstSolution
         super().__init__()
 
     def run(self):
@@ -87,9 +88,13 @@ class ExportingThread(threading.Thread):
         return dist, demands, num_of_vehicles, capacity, node_coords
 
     def find_patch(self, dist, demands, nun_of_vehicles, capacity):
-        routes, total_distance, total_load = main_sarch(dist, demands, nun_of_vehicles, capacity, self.alg_type, self.timeValue)
-        self.total_distance = total_distance
-        self.total_load = total_load
+
+        try:
+            routes, total_distance, total_load = main_sarch(dist, demands, nun_of_vehicles, capacity, self.alg_type, self.firstSolution, self.timeValue)
+            self.total_distance = total_distance
+            self.total_load = total_load
+        except:
+            print('error')
         return routes
 
     def prepare_output(self, node_coords, routes):

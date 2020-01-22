@@ -1,4 +1,4 @@
-from __future__ import print_function
+# from __future__ import print_function
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
@@ -11,8 +11,6 @@ def create_data_model(dist, demands, K, capacity):
     data['vehicle_capacities'] = K * [capacity]
     data['num_vehicles'] = K
     data['depot'] = 0
-    print(data)
-    print('+++++++++++++++++++++++++')
     return data
 
 
@@ -45,7 +43,7 @@ def print_solution(data, manager, routing, assignment):
     return total_distance, total_load
 
 
-def main_sarch(dist, demands, K, capacity, alg_type, time_limit=360):
+def main_sarch(dist, demands, K, capacity, alg_type, firstSolution, time_limit=360):
     """Solve the CVRP problem."""
     # Instantiate the data problem.
     data = create_data_model(dist, demands, K, capacity)
@@ -90,10 +88,6 @@ def main_sarch(dist, demands, K, capacity, alg_type, time_limit=360):
 
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
 
-    # search_parameters.local_search_metaheuristic = (
-    #     routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-
-    # "AUTOMATIC"
 
     if alg_type == 'AUTOMATIC':
         search_parameters.local_search_metaheuristic = (
@@ -121,8 +115,20 @@ def main_sarch(dist, demands, K, capacity, alg_type, time_limit=360):
 
     search_parameters.time_limit.seconds = time_limit
 
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
+    if firstSolution == "PATH_MOST_CONSTRAINED_ARC":
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC)
+
+    elif firstSolution == "CHRISTOFIDES":
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.CHRISTOFIDES)
+
+    else:
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.AUTOMATIC)
+
+    # search_parameters.first_solution_strategy = (
+    #     routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC) # PATH_MOST_CONSTRAINED_ARC , CHRISTOFIDES , SAVINGS, AUTOMATIC
 
     # Solve the problem.
     assignment = routing.SolveWithParameters(search_parameters)
@@ -152,7 +158,7 @@ def main_sarch(dist, demands, K, capacity, alg_type, time_limit=360):
         routes = []
         total_distance, total_load = 0, 0
 
-    print('------------------------------')
+    print('END of Solution')
 
     return routes, total_distance, total_load
 

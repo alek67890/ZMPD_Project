@@ -8,7 +8,8 @@ class TaskStatus extends React.Component {
             value:'',
             file:'',
             alg:'gen',
-            selectValue: 'AUTOMATIC',
+            selectValue: 'GREEDY_DESCENT',
+            firstSolution: 'PATH_MOST_CONSTRAINED_ARC',
             timeValue: 60
           };
     }
@@ -18,6 +19,12 @@ class TaskStatus extends React.Component {
         this.setState({selectValue: event.target.value});
     }
 
+    
+    handleChangeFirstSolution(event) {
+        console.log(event.target.value)
+        this.setState({firstSolution: event.target.value});
+    }
+
     handleChangeTime(event) {
         this.setState({timeValue: event.target.value});
     }
@@ -25,7 +32,7 @@ class TaskStatus extends React.Component {
     sendTask(){
         try{
             this.state.file.text().then((response)=>{
-                backend.post("/create", {data: response, alg: this.state.selectValue, timeValue: this.state.timeValue});
+                backend.post("/create", {data: response, alg: this.state.selectValue, timeValue: this.state.timeValue, firstSolution: this.state.firstSolution});
                 // console.log(response);
             })
         }
@@ -48,8 +55,8 @@ class TaskStatus extends React.Component {
     render () {
         return <div className="ui segment">
 
-        <div className="ui action input">
-            <input type="file" placeholder="Search..." value={this.state.value} onChange={this.handleChangeFile.bind(this)} />
+        <div className="ui action input stackable grid">
+
             <div className="ui label">Algorithm: </div>
             <select value={this.state.selectValue} onChange={this.handleChangeSelect.bind(this)} className="ui selection dropdown" id="dropmenu">
                 <option value="AUTOMATIC">Automatic</option>
@@ -59,9 +66,19 @@ class TaskStatus extends React.Component {
                 <option value="TABU_SEARCH">Tabu search</option>
                 <option value="OBJECTIVE_TABU_SEARCH">Objective Tabu search</option>
             </select>
+
             <div className="ui label">Max Time: </div>
             <input type="number" name="quantity" min="1" max="1000" value={this.state.timeValue} onChange={this.handleChangeTime.bind(this)}></input>
-            <div className="ui button" onClick={()=> {
+
+            <div className="ui label">First Solution: </div>
+            <select value={this.state.firstSolution} onChange={this.handleChangeFirstSolution.bind(this)} className="ui selection dropdown" id="dropmenu">
+                <option value="PATH_MOST_CONSTRAINED_ARC">Path Most Constrained Arc</option>
+                <option value="CHRISTOFIDES">Christofides</option>
+            </select>
+
+            <input type="file" placeholder="Search..." value={this.state.value} onChange={this.handleChangeFile.bind(this)} />
+
+            <div className="ui primary button" onClick={()=> {
                     console.log("CLIASDF");
                     this.sendTask();
                 }}>Create New task</div>

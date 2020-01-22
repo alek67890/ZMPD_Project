@@ -38,11 +38,25 @@ class TaskStatus extends React.Component {
       default:
         alg = 'Unknown'
     }
+
+    let firstSolution = ''
+
+    switch (this.props.firstSolution) {
+      case 'PATH_MOST_CONSTRAINED_ARC':
+        firstSolution = "Path Most Constrained Arc";
+        break;
+      case 'CHRISTOFIDES':
+        firstSolution = "Christofides";
+        break;
+      default:
+        firstSolution = 'Unknown'
+    }
     
     return <div className="ui segment">
         <div className='message-box'>
         {this.props.name} <br/>
         Algorithm used: {alg} <br/>
+        First solution: {firstSolution} <br/>
         Progress : {this.props.progress}%
         <Line percent={this.props.progress} strokeWidth="4" strokeColor="blue" />
         Current status : {this.props.status}
