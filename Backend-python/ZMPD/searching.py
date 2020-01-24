@@ -44,34 +44,23 @@ def print_solution(data, manager, routing, assignment):
 
 
 def main_sarch(dist, demands, K, capacity, alg_type, firstSolution, time_limit=360):
-    """Solve the CVRP problem."""
-    # Instantiate the data problem.
+
     data = create_data_model(dist, demands, K, capacity)
 
-    # Create the routing index manager.
     manager = pywrapcp.RoutingIndexManager(len(data['distance_matrix']),
                                            data['num_vehicles'], data['depot'])
 
-    # Create Routing Model.
     routing = pywrapcp.RoutingModel(manager)
 
-    # Create and register a transit callback.
     def distance_callback(from_index, to_index):
-        """Returns the distance between the two nodes."""
-        # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
         return data['distance_matrix'][from_node][to_node]
 
     transit_callback_index = routing.RegisterTransitCallback(distance_callback)
-
-    # Define cost of each arc.
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-    # Add Capacity constraint.
     def demand_callback(from_index):
-        """Returns the demand of the node."""
-        # Convert from routing variable Index to demands NodeIndex.
         from_node = manager.IndexToNode(from_index)
         return data['demands'][from_node]
 
@@ -87,7 +76,6 @@ def main_sarch(dist, demands, K, capacity, alg_type, firstSolution, time_limit=3
     # Setting first solution heuristic.
 
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-
 
     if alg_type == 'AUTOMATIC':
         search_parameters.local_search_metaheuristic = (
@@ -127,16 +115,9 @@ def main_sarch(dist, demands, K, capacity, alg_type, firstSolution, time_limit=3
         search_parameters.first_solution_strategy = (
             routing_enums_pb2.FirstSolutionStrategy.AUTOMATIC)
 
-    # search_parameters.first_solution_strategy = (
-    #     routing_enums_pb2.FirstSolutionStrategy.PATH_MOST_CONSTRAINED_ARC) # PATH_MOST_CONSTRAINED_ARC , CHRISTOFIDES , SAVINGS, AUTOMATIC
-
-    # Solve the problem.
     assignment = routing.SolveWithParameters(search_parameters)
 
     def get_routes(manager, routing, solution, num_routes):
-        """Get vehicle routes from a solution and store them in an array."""
-        # Get vehicle routes and store them in a two dimensional array whose
-        # i,j entry is the jth location visited by vehicle i along its route.
         routes = []
         for route_nbr in range(num_routes):
             index = routing.Start(route_nbr)
@@ -151,17 +132,10 @@ def main_sarch(dist, demands, K, capacity, alg_type, firstSolution, time_limit=3
     if assignment:
         total_distance, total_load = print_solution(data, manager, routing, assignment)
         routes = get_routes(manager, routing, assignment, data['num_vehicles'])
-
         for i, route in enumerate(routes):
             print('Route', i, route)
     else:
         routes = []
         total_distance, total_load = 0, 0
 
-    print('END of Solution')
-
     return routes, total_distance, total_load
-
-
-# if __name__ == '__main__':
-#     main()

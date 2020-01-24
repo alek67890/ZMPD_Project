@@ -4,26 +4,9 @@ import re
 
 from model import ExportingThread
 from flask import request
-# from flask import jsonify
-#
-# from flask import Flask
 
 from app import app, exporting_threads
 
-# class ExportingThread(threading.Thread):
-#     def __init__(self):
-#         self.progress = 0
-#         self.output = {}
-#         super().__init__()
-#
-#     def run(self):
-#         # Your exporting stuff goes here ...
-#         for _ in range(100):
-#             time.sleep(1)
-#             self.progress += 1
-#
-#         self.output['final'] = "dsadasd"
-#
 
 @app.route('/tasks')
 def index():
@@ -53,8 +36,7 @@ def index():
 
 @app.route('/create', methods=['POST'])
 def create():
-    # print(request.headers)
-    # print(request.data)
+
     data = request.get_json()['data']
     alg = request.get_json()['alg']
     timeValue = int(request.get_json()['timeValue'])
@@ -71,34 +53,21 @@ def create():
 
     name = re.search("^NAME\s*:\s*(.+)*$", data, re.MULTILINE).group(1)
 
-    problem_data = {'capacity': capacity, 'node_coords': node_coords, 'demands': demands}
+    depot = re.findall(r"^(\d+\.*\d*)\s+(\d+\.*\d*)\s*$", data, re.MULTILINE)
+    depot = (float(depot[-1][0]), float(depot[-1][1]))
 
+    problem_data = {'capacity': capacity, 'node_coords': node_coords, 'demands': demands, 'depot': depot}
 
     global exporting_threads
 
     thread_id = random.randint(0, 10000)
-    exporting_threads[thread_id] = ExportingThread(problem_data, name, alg, firstSolution, timeValue, True)
+    exporting_threads[thread_id] = ExportingThread(problem_data, name, alg, firstSolution, timeValue)
     exporting_threads[thread_id].start()
-
-    # thread_id2 = random.randint(0, 10000)
-    # exporting_threads[thread_id2] = ExportingThread(problem_data2, name, alg, firstSolution, timeValue, True)
-    # exporting_threads[thread_id2].start()
-    # exporting_threads[thread_id2].delay_start(0.1)
 
     return 'task id: #%s' % thread_id
 
 
-@app.route('/task/<int:thread_id>')
-def progress(thread_id):
-    global exporting_threads
+@app.route('/')
+def home():
 
-    return str(exporting_threads[thread_id].progress)
-
-
-
-@app.route('/output/<int:thread_id>')
-def output(thread_id):
-    global exporting_threads
-
-    return str(exporting_threads[thread_id].output)
-
+    return str('OK')

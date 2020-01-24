@@ -3,8 +3,9 @@ import time
 import numpy as np
 from searching import main_sarch
 
+
 class ExportingThread(threading.Thread):
-    def __init__(self, problem_data, name, alg_type, firstSolution, timeValue, regex=False):
+    def __init__(self, problem_data, name, alg_type, firstSolution, timeValue):
         self.progress = 0
         self.output = {}
         self.status = 'created'
@@ -16,7 +17,6 @@ class ExportingThread(threading.Thread):
         self.total_load = ''
         self.sol_data = {}
         self.alg_type = alg_type
-        self.regex = regex
         self.timeValue = timeValue
         self.firstSolution = firstSolution
         super().__init__()
@@ -25,11 +25,8 @@ class ExportingThread(threading.Thread):
 
         self.status = 'Preparing data'
         self.progress = 25
-        if self.regex:
-            dist, demands, nun_of_vehicles, capacity, node_coords = self.prepare_data_regex()
-        else:
-            dist, demands, nun_of_vehicles, capacity, node_coords = self.prepare_data()
-        time.sleep(0.1)
+
+        dist, demands, nun_of_vehicles, capacity, node_coords = self.prepare_data()
 
         self.status = 'Finding patch'
         self.progress = 50
@@ -45,43 +42,34 @@ class ExportingThread(threading.Thread):
         self.output['final'] = "dsadasd"
         self.status = 'finished'
 
-
-        # Your exporting stuff goes here ...
-        # for _ in range(100):
-        #     time.sleep(0.01)
-        #     self.progress += 1
-
-    def delay_start(self, sleep_time):
-        time.sleep(sleep_time)
-        self.run()
-
     @staticmethod
     def cal_euc_dist(x1, y1, x2, y2):
-        return int(np.round(np.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))))
+        return np.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
+        # return int(np.round(np.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))))
 
     def prepare_data(self):
-
-        demands = list(self.problem_data.demands.values())
-        node_coords = list(self.problem_data.node_coords.values())
-        size = len(node_coords)
-        dist = np.zeros([size, size])
-        for i in range(size):
-            for j in range(size):
-                dist[i][j] = self.cal_euc_dist(*node_coords[i], *node_coords[j])
-        nun_of_vehicles = int(self.problem_data.name.split('k')[1])
-        capacity = self.problem_data.capacity
-
-        return dist, demands, nun_of_vehicles, capacity, node_coords
-
-    def prepare_data_regex(self):
         # print(self.problem_data)
-        demands = list(self.problem_data['demands'].values())
+        depot = self.problem_data['depot']
+        demands = self.problem_data['demands']
         node_coords = list(self.problem_data['node_coords'].values())
         size = len(node_coords)
+
+        if float(list(demands)[-1]) == depot[0] and float(list(demands.values())[-1]) == depot[1]:
+            demands = list(demands.values())
+        else:
+            node_coords.append(depot)
+            demands = list(demands.values())
+            demands.append(0)
+            size = len(node_coords)
+
+            node_coords[0], node_coords[-1] = node_coords[-1], node_coords[0]
+            demands[0], demands[-1] = demands[-1], demands[0]
+
         dist = np.zeros([size, size])
         for i in range(size):
             for j in range(size):
                 dist[i][j] = self.cal_euc_dist(*node_coords[i], *node_coords[j])
+
         capacity = self.problem_data['capacity']
         num_of_vehicles = int(np.ceil(np.sum(demands) / capacity))
 
@@ -90,7 +78,7 @@ class ExportingThread(threading.Thread):
     def find_patch(self, dist, demands, nun_of_vehicles, capacity):
 
         try:
-            routes, total_distance, total_load = main_sarch(dist, demands, nun_of_vehicles, capacity, self.alg_type, self.firstSolution, self.timeValue)
+            routes, total_distance, total_load = main_sarch(dist, demands, nun_of_vehicles, capacity, self.alg_type, self.firstSolution, self.timeValue, )
             self.total_distance = total_distance
             self.total_load = total_load
         except:
