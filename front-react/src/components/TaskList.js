@@ -29,7 +29,18 @@ class TaskList extends React.Component {
             {this.state.data_keys.map(( item, key ) => {
                 let element = this.state.data[item]
                 if (element){
-                    return <TaskStatus key={key} name={element.name} status={element.status} output={element.output} progress={element.progress}/>
+                    return <TaskStatus key={key} 
+                            name={element.name}
+                            status={element.status}
+                            output={element.output}
+                            progress={element.progress}
+                            points={element.points}
+                            routes_plot={element.routes_plot}
+                            total_load={element.total_load}
+                            total_distance={element.total_distance}
+                            alg={element.alg}
+                            firstSolution={element.firstSolution}
+                            />
                 }
                 return ""
                 })

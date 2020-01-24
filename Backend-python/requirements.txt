@@ -1,3 +1,5 @@
 Flask
 flask-cors
-tsplib95
+ortools
+numpy
+pyinstaller
